@@ -1,0 +1,164 @@
+{
+  "id": "initial_profile_questionnaire_v1",
+  "version": 1,
+  "title": "Initial Profile Questionnaire",
+  "description": "This questionnaire helps the consultant understand the client’s background, AI experience, work context, motivations, and areas where support may be helpful.",
+  "sections": [
+    {
+      "id": "personal_details",
+      "title": "Personal Details",
+      "description": "Basic information used to identify and personalise the client experience.",
+      "questions": [
+        {
+          "id": "full_name",
+          "label": "Full name",
+          "type": "short_text",
+          "required": true,
+          "placeholder": "Enter your full name"
+        },
+        {
+          "id": "preferred_name",
+          "label": "Preferred name",
+          "type": "short_text",
+          "required": false,
+          "placeholder": "Enter the name you prefer to be called"
+        },
+        {
+          "id": "pronouns",
+          "label": "Pronouns",
+          "type": "short_text",
+          "required": false,
+          "placeholder": "For example: she/her, he/him, they/them"
+        },
+        {
+          "id": "email_address",
+          "label": "Email address",
+          "type": "email",
+          "required": true,
+          "placeholder": "Enter your email address"
+        },
+        {
+          "id": "location",
+          "label": "Location",
+          "type": "short_text",
+          "required": false,
+          "placeholder": "Town, city, region, or country"
+        },
+        {
+          "id": "occupation",
+          "label": "Occupation",
+          "type": "short_text",
+          "required": false,
+          "placeholder": "Enter your current occupation or role"
+        }
+      ]
+    },
+    {
+      "id": "ai_experience",
+      "title": "AI Experience",
+      "description": "These questions help understand the client’s previous experience with AI tools.",
+      "questions": [
+        {
+          "id": "ai_tools_used",
+          "label": "Which AI tools have you used?",
+          "type": "multi_select",
+          "required": true,
+          "options": [
+            "OpenAI / ChatGPT",
+            "Claude",
+            "Gemini",
+            "Microsoft Copilot",
+            "Other",
+            "I have not used AI tools before"
+          ]
+        },
+        {
+          "id": "ai_uses",
+          "label": "What do you use AI for?",
+          "type": "multi_select",
+          "required": false,
+          "options": [
+            "General information and research",
+            "Creative projects",
+            "Planning",
+            "Writing or editing",
+            "Learning something new",
+            "Problem solving",
+            "Work tasks",
+            "Emotional support",
+            "I am not sure"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "work_context",
+      "title": "Work and Life Context",
+      "description": "These questions help understand the client’s current work or life situation.",
+      "questions": [
+        {
+          "id": "work_status",
+          "label": "Which of the following best describes your current work or life situation?",
+          "type": "multi_select",
+          "required": true,
+          "options": [
+            "Full-time employment",
+            "Part-time employment",
+            "Self-employed / freelance",
+            "Running my own business",
+            "Studying",
+            "Volunteering",
+            "Carer",
+            "Not currently working",
+            "Retired"
+          ]
+        },
+        {
+          "id": "motivations",
+          "label": "Which of the following are important motivations for you?",
+          "type": "multi_select",
+          "required": false,
+          "options": [
+            "Doing work that is meaningful",
+            "Creative expression",
+            "Autonomy and independence",
+            "Connection with others",
+            "Being good at what I do",
+            "Helping and supporting others",
+            "Recognition",
+            "Making a difference",
+            "Learning and growing"
+          ]
+        },
+        {
+          "id": "work_tendencies",
+          "label": "At work, I tend to...",
+          "type": "multi_select",
+          "required": false,
+          "options": [
+            "Take on a lot of responsibility",
+            "Find it hard to switch off",
+            "Work independently",
+            "Thrive in a team",
+            "Prefer clear structure",
+            "Enjoy variety"
+          ]
+        },
+        {
+          "id": "work_struggles",
+          "label": "At work, I can struggle with...",
+          "type": "multi_select",
+          "required": false,
+          "options": [
+            "Saying no",
+            "Delegating",
+            "Asking for help",
+            "Managing pressure",
+            "Conflict",
+            "Staying motivated"
+          ]
+        }
+      ]
+    }
+  ]
+}
