@@ -1,0 +1,28 @@
+{
+  "users": [
+    {
+      "user_id": "user_001",
+      "email": "client1@example.com",
+      "display_name": "Client One",
+      "role": "user",
+      "active": true,
+      "access_code": "demo123"
+    },
+    {
+      "user_id": "consultant_001",
+      "email": "consultant@example.com",
+      "display_name": "Consultant",
+      "role": "consultant",
+      "active": true,
+      "access_code": "consultant123"
+    },
+    {
+      "user_id": "admin_001",
+      "email": "admin@example.com",
+      "display_name": "Admin",
+      "role": "admin",
+      "active": true,
+      "access_code": "admin123"
+    }
+  ]
+}
