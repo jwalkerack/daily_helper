@@ -1,198 +1,111 @@
-import json
-from pathlib import Path
-
 import streamlit as st
 
+from views.login_page import render_login_page
+from views.questionnaire_page import render_questionnaire_page
+from views.consultant_review_page import render_consultant_review_page
+from views.consultant_profile_page import render_consultant_profile_page
+from views.ai_chat_page import render_ai_chat_page
+from services.logging_service import logger
 
-QUESTIONNAIRE_PATH = Path("questionnaires/user_form.json")
+
+def initialise_session_state():
+    if "user" not in st.session_state:
+        st.session_state["user"] = None
+
+    if "current_page" not in st.session_state:
+        st.session_state["current_page"] = "Questionnaire"
 
 
-def load_questionnaire(path: Path) -> dict:
-    with open(path, "r", encoding="utf-8") as file:
-        return json.load(file)
+def logout():
+    logger.info("User clicked logout.")
+    st.session_state.clear()
+    st.rerun()
 
 
-def render_question(question: dict):
-    question_id = question["id"]
-    label = question["label"]
-    question_type = question["type"]
-    required = question.get("required", False)
-    placeholder = question.get("placeholder", "")
-    help_text = question.get("help", None)
+def get_navigation_options(role: str) -> list[str]:
+    if role == "user":
+        return ["Questionnaire", "AI Helper"]
 
-    display_label = f"{label} *" if required else label
+    if role == "consultant":
+        return ["User Review", "Profile Builder"]
 
-    if question_type == "short_text":
-        return st.text_input(
-            display_label,
-            key=question_id,
-            placeholder=placeholder,
-            help=help_text,
+    if role == "admin":
+        return ["User Review", "Profile Builder", "Admin"]
+
+    logger.warning(f"Unknown role provided for navigation: {role}")
+    return []
+
+
+def render_sidebar():
+    user = st.session_state.get("user")
+
+    with st.sidebar:
+        st.title("Daily Helper")
+
+        if not user:
+            st.info("Please log in to continue.")
+            return None
+
+        st.write(f"Logged in as: **{user.get('display_name', user.get('email'))}**")
+        st.caption(f"Role: {user.get('role')}")
+
+        navigation_options = get_navigation_options(user.get("role"))
+
+        selected_page = st.radio(
+            "Navigation",
+            options=navigation_options,
+            key="current_page",
         )
 
-    if question_type == "email":
-        return st.text_input(
-            display_label,
-            key=question_id,
-            placeholder=placeholder,
-            help=help_text,
-        )
-
-    if question_type == "long_text":
-        return st.text_area(
-            display_label,
-            key=question_id,
-            placeholder=placeholder,
-            help=help_text,
-        )
-
-    if question_type == "single_select":
-        options = question.get("options", [])
-        return st.selectbox(
-            display_label,
-            options=[""] + options,
-            key=question_id,
-            help=help_text,
-        )
-
-    if question_type == "multi_select":
-        options = question.get("options", [])
-        return st.multiselect(
-            display_label,
-            options=options,
-            key=question_id,
-            help=help_text,
-        )
-
-    if question_type == "scale":
-        return st.slider(
-            display_label,
-            min_value=question.get("min", 1),
-            max_value=question.get("max", 10),
-            value=question.get("default", question.get("min", 1)),
-            key=question_id,
-            help=help_text,
-        )
-
-    if question_type == "checkbox":
-        return st.checkbox(
-            display_label,
-            key=question_id,
-            help=help_text,
-        )
-
-    if question_type == "yes_no":
-        return st.radio(
-            display_label,
-            options=["", "Yes", "No"],
-            key=question_id,
-            horizontal=True,
-            help=help_text,
-        )
-
-    st.warning(f"Unsupported question type: {question_type}")
-    return None
-
-
-def render_questionnaire(questionnaire: dict) -> dict:
-    st.title(questionnaire.get("title", "Questionnaire"))
-
-    if questionnaire.get("description"):
-        st.write(questionnaire["description"])
-
-    st.divider()
-
-    answers = {}
-
-    for section in questionnaire.get("sections", []):
-        st.header(section["title"])
-
-        if section.get("description"):
-            st.caption(section["description"])
-
-        for question in section.get("questions", []):
-            answers[question["id"]] = render_question(question)
+        logger.info(f"Current selected page: {selected_page}")
 
         st.divider()
 
-    return answers
+        if st.button("Log out"):
+            logout()
 
-
-def validate_answers(questionnaire: dict, answers: dict) -> list[str]:
-    errors = []
-
-    for section in questionnaire.get("sections", []):
-        for question in section.get("questions", []):
-            if not question.get("required", False):
-                continue
-
-            question_id = question["id"]
-            question_type = question["type"]
-            answer = answers.get(question_id)
-
-            if question_type in ["short_text", "email", "long_text", "single_select", "yes_no"]:
-                if not answer or str(answer).strip() == "":
-                    errors.append(question["label"])
-
-            elif question_type == "multi_select":
-                if not answer:
-                    errors.append(question["label"])
-
-            elif question_type == "checkbox":
-                if answer is not True:
-                    errors.append(question["label"])
-
-            elif question_type == "scale":
-                if answer is None:
-                    errors.append(question["label"])
-
-    return errors
+    return selected_page
 
 
 def main():
     st.set_page_config(
-        page_title="Questionnaire Preview",
+        page_title="Daily Helper",
         page_icon="🧠",
         layout="centered",
     )
 
-    questionnaire = load_questionnaire(QUESTIONNAIRE_PATH)
+    logger.info("App started / rerun triggered.")
 
-    with st.sidebar:
-        st.subheader("Preview mode")
-        st.write("This page renders the questionnaire directly from JSON.")
-        st.write(f"Questionnaire ID: `{questionnaire.get('id')}`")
-        st.write(f"Version: `{questionnaire.get('version')}`")
+    initialise_session_state()
 
-    answers = render_questionnaire(questionnaire)
+    if not st.session_state.get("user"):
+        logger.info("No logged-in user found. Showing login page.")
+        render_login_page()
+        return
 
-    submitted = st.button("Submit questionnaire", type="primary")
+    logger.info(f"Logged-in user found: {st.session_state.get('user')}")
 
-    if submitted:
-        errors = validate_answers(questionnaire, answers)
+    selected_page = render_sidebar()
 
-        if errors:
-            st.error("Please complete the required questions before submitting.")
-            for error in errors:
-                st.write(f"- {error}")
-        else:
-            submission = {
-                "questionnaire_id": questionnaire["id"],
-                "questionnaire_version": questionnaire["version"],
-                "answers": answers,
-            }
+    if selected_page == "Questionnaire":
+        render_questionnaire_page()
 
-            st.success("Questionnaire submitted successfully.")
+    elif selected_page == "User Review":
+        render_consultant_review_page()
 
-            st.subheader("Submission preview")
-            st.json(submission)
+    elif selected_page == "Profile Builder":
+        render_consultant_profile_page()
 
-            st.download_button(
-                label="Download submission as JSON",
-                data=json.dumps(submission, indent=2, ensure_ascii=False),
-                file_name="questionnaire_submission.json",
-                mime="application/json",
-            )
+    elif selected_page == "AI Helper":
+        render_ai_chat_page()
+
+    elif selected_page == "Admin":
+        st.title("Admin")
+        st.info("Admin tools will be added later.")
+
+    else:
+        logger.warning(f"No valid page selected: {selected_page}")
+        st.warning("No page selected.")
 
 
 if __name__ == "__main__":
