@@ -1,12 +1,28 @@
 {
   "users": [
-    {
+   {
       "user_id": "user_001",
-      "email": "demo@example.com",
-      "display_name": "Demo User",
+      "email": "client1@example.com",
+      "display_name": "Client One",
       "role": "user",
       "active": true,
       "access_code": "demo123"
+    },
+     {
+      "user_id": "user_002",
+      "email": "client2@example.com",
+      "display_name": "Client two",
+      "role": "user",
+      "active": true,
+      "access_code": "demo456"
+    },
+      {
+      "user_id": "user_003",
+      "email": "client2@example.com",
+      "display_name": "Client two",
+      "role": "user",
+      "active": true,
+      "access_code": "demo789"
     },
     {
       "user_id": "consultant_001",

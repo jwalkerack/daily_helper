@@ -8,6 +8,22 @@
       "active": true,
       "access_code": "demo123"
     },
+     {
+      "user_id": "user_002",
+      "email": "client2@example.com",
+      "display_name": "Client two",
+      "role": "user",
+      "active": true,
+      "access_code": "demo456"
+    },
+      {
+      "user_id": "user_003",
+      "email": "client2@example.com",
+      "display_name": "Client two",
+      "role": "user",
+      "active": true,
+      "access_code": "demo789"
+    },
     {
       "user_id": "consultant_001",
       "email": "consultant@example.com",
