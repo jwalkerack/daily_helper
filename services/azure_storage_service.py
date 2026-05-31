@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from dotenv import load_dotenv
-from azure.core.exceptions import AzureError, ResourceNotFoundError
+from azure.core.exceptions import AzureError, ResourceNotFoundError, ResourceExistsError
 from azure.storage.blob import BlobServiceClient, ContentSettings
 
 from services.logging_service import logger
@@ -296,3 +296,102 @@ def save_consultant_profile(
 def load_consultant_profile(user_id: str) -> dict | None:
     logger.info(f"Loading consultant profile for user_id={user_id}")
     return _download_json(_profile_blob_name(user_id))
+
+
+def list_all_blob_names(prefix: str = "") -> list[str]:
+    """
+    Lists file-like blob names in the configured Azure Storage container.
+
+    Skips ADLS directory markers so the admin preview/delete tool only targets
+    actual stored files such as status.json, profile_v1.json, and submissions.
+    """
+    try:
+        container_client = _get_container_client()
+
+        blob_names = []
+
+        for blob in container_client.list_blobs(name_starts_with=prefix):
+            blob_name = blob.name
+
+            # ADLS / hierarchical namespace accounts can expose directory markers.
+            # We only want to target actual files.
+            if blob_name.endswith("/"):
+                logger.info(f"Skipping directory marker in preview: {blob_name}")
+                continue
+
+            blob_names.append(blob_name)
+
+        logger.info(f"Listed {len(blob_names)} file blobs with prefix: {prefix}")
+
+        return blob_names
+
+    except AzureError:
+        logger.exception(f"Azure error listing blobs with prefix: {prefix}")
+        raise
+
+    except Exception:
+        logger.exception(f"Unexpected error listing blobs with prefix: {prefix}")
+        raise
+
+
+def delete_blobs_by_prefix(prefix: str = "users/") -> int:
+    """
+    Deletes file blobs from the configured Azure Storage container by prefix.
+
+    This intentionally skips ADLS directory markers. Deleting the actual JSON/file
+    blobs is enough to reset the app, because the app checks for files such as:
+    - users/{user_id}/status.json
+    - users/{user_id}/questionnaire_submissions/*.json
+    - users/{user_id}/profile/profile_v1.json
+    """
+    try:
+        container_client = _get_container_client()
+        blob_names = list_all_blob_names(prefix=prefix)
+
+        if not blob_names:
+            logger.info(f"No file blobs found to delete with prefix: {prefix}")
+            return 0
+
+        deleted_count = 0
+        skipped_count = 0
+
+        # Delete deepest paths first. This helps with ADLS-style hierarchical storage.
+        blob_names = sorted(blob_names, key=lambda name: name.count("/"), reverse=True)
+
+        for blob_name in blob_names:
+            if blob_name.endswith("/"):
+                skipped_count += 1
+                logger.info(f"Skipping directory marker during delete: {blob_name}")
+                continue
+
+            try:
+                blob_client = container_client.get_blob_client(blob_name)
+                blob_client.delete_blob()
+                deleted_count += 1
+                logger.info(f"Deleted blob: {blob_name}")
+
+            except ResourceNotFoundError:
+                skipped_count += 1
+                logger.warning(f"Blob already missing during delete: {blob_name}")
+
+            except ResourceExistsError as error:
+                skipped_count += 1
+                logger.warning(
+                    f"Skipped non-empty ADLS directory during delete: {blob_name}. "
+                    f"Azure error: {error}"
+                )
+
+        logger.warning(
+            f"Admin delete complete for prefix={prefix}. "
+            f"Deleted={deleted_count}, skipped={skipped_count}"
+        )
+
+        return deleted_count
+
+    except AzureError:
+        logger.exception(f"Azure error deleting blobs with prefix: {prefix}")
+        raise
+
+    except Exception:
+        logger.exception(f"Unexpected error deleting blobs with prefix: {prefix}")
+        raise

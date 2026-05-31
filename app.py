@@ -6,7 +6,7 @@ from views.consultant_review_page import render_consultant_review_page
 from views.consultant_profile_page import render_consultant_profile_page
 from views.ai_chat_page import render_ai_chat_page
 from services.logging_service import logger
-
+from views.admin_page import render_admin_page
 
 def initialise_session_state():
     if "user" not in st.session_state:
@@ -100,8 +100,8 @@ def main():
         render_ai_chat_page()
 
     elif selected_page == "Admin":
-        st.title("Admin")
-        st.info("Admin tools will be added later.")
+
+        render_admin_page()
 
     else:
         logger.warning(f"No valid page selected: {selected_page}")

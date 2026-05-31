@@ -18,8 +18,8 @@
     },
       {
       "user_id": "user_003",
-      "email": "client2@example.com",
-      "display_name": "Client two",
+      "email": "client3@example.com",
+      "display_name": "Client three",
       "role": "user",
       "active": true,
       "access_code": "demo789"
